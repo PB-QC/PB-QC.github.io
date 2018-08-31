@@ -137,6 +137,34 @@
 
 <article class="post-card post"> 
     
+    <a class="post-card-image-link" href="/post/">
+      <div class="post-card-image" style="background-image: url(/defimg/6.jpg)"></div>
+    </a>    
+    
+
+    <div class="post-card-content">
+      <a class="post-card-content-link" href="/post/">
+          <header class="post-card-header">
+              
+              <h2 class="post-card-title">Posts</h2>
+          </header>
+          <section class="post-card-excerpt">
+              
+                <p> </p>
+              
+          </section>
+      </a>
+
+      <footer class="post-card-meta">
+          <img class="author-profile-image" src="/img/ghost-icon.png" alt="Author" />
+          <span class="post-card-author"><a href="/">EM</a></span>
+      </footer>
+    </div>
+</article>
+ 
+
+<article class="post-card post"> 
+    
     <a class="post-card-image-link" href="/post/creating-a-new-theme/">
       <div class="post-card-image" style="background-image: url(/img/welcome.jpg)"></div>
     </a>
@@ -166,61 +194,29 @@ We&rsquo;ll start with creating a new site with a very basic template. ...  </p>
 
 <article class="post-card post"> 
     
-    <a class="post-card-image-link" href="/post/colenak/">
-      <div class="post-card-image" style="background-image: url(/defimg/1.jpg)"></div>
-    </a>    
+    <a class="post-card-image-link" href="/post/migrate-to-hugo-from-jekyll/">
+      <div class="post-card-image" style="background-image: url(/img/team.jpg)"></div>
+    </a>
     
 
     <div class="post-card-content">
-      <a class="post-card-content-link" href="/post/colenak/">
+      <a class="post-card-content-link" href="/post/migrate-to-hugo-from-jekyll/">
           <header class="post-card-header">
               
-              <h2 class="post-card-title">Colenak</h2>
+              <h2 class="post-card-title">Migrate to Hugo from Jekyll</h2>
           </header>
           <section class="post-card-excerpt">
               
-                <p>Introduction This tutorial will show you how to create a simple theme in Hugo. I assume that you are familiar with HTML, the bash command line, and that you are comfortable using Markdown to format content. I&rsquo;ll explain how Hugo uses templates and how you can organize your templates to create a theme. I won&rsquo;t cover using CSS to style your theme.
-We&rsquo;ll start with creating a new site with a very basic template. ...  </p>
+                <p>Move static content to static Jekyll has a rule that any directory not starting with _ will be copied as-is to the _site output. Hugo keeps all static content under static. You should therefore move it all there. With Jekyll, something that looked like
+▾ &lt;root&gt;/ ▾ images/ logo.png  should become
+▾ &lt;root&gt;/ ▾ static/ ▾ images/ logo.png  Additionally, you&rsquo;ll want any files that should reside at the root (such as CNAME) to be moved to static. ...  </p>
               
           </section>
       </a>
 
       <footer class="post-card-meta">
           <img class="author-profile-image" src="/img/ghost-icon.png" alt="Author" />
-          <span class="post-card-author"><a href="/">Michael Henderson</a></span>
-      </footer>
-    </div>
-</article>
- 
-
-<article class="post-card post"> 
-    
-    <a class="post-card-image-link" href="/post/an-analysis-of-last-years-pb-survey/">
-      <div class="post-card-image" style="background-image: url(/defimg/4.jpg)"></div>
-    </a>    
-    
-
-    <div class="post-card-content">
-      <a class="post-card-content-link" href="/post/an-analysis-of-last-years-pb-survey/">
-          <header class="post-card-header">
-              <span class="post-card-tags">
-              #R Markdown 
-              #plot 
-              #regression  </span>
-              
-              <h2 class="post-card-title">An analysis of last year&#39;s PB survey</h2>
-          </header>
-          <section class="post-card-excerpt">
-              
-                <p>Introduction  This report is a preliminary analysis of the Queens College survey data. The report is divided into the following sections I. Overview of data and concerns II. Prelimnary summary statistics III. Possible Future explorations.
- I. Data Overview  As with most surveys, the data is fairly messy in particular there are lots of missing values across the varibales and there are various ways that can be dealt with. ...  </p>
-              
-          </section>
-      </a>
-
-      <footer class="post-card-meta">
-          <img class="author-profile-image" src="/img/ghost-icon.png" alt="Author" />
-          <span class="post-card-author"><a href="/">John Ihor Campagna</a></span>
+          <span class="post-card-author"><a href="/">EM</a></span>
       </footer>
     </div>
 </article>

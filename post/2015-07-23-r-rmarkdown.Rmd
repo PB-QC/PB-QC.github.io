@@ -1,9 +1,10 @@
 ---
 title: "An analysis of last year's PB survey"
 author: "John Ihor Campagna"
-date: 2015-07-23T21:13:14-05:00
+date: 2018-08-31T21:13:14-05:00
 categories: ["R"]
 tags: ["R Markdown", "plot", "regression"]
+image: img/surveys.jpg
 ---
 
 ```{r setup, include=FALSE}
