@@ -1,0 +1,204 @@
+---
+title: "An analysis of last year's PB survey"
+author: "John Ihor Campagna"
+date: 2015-07-23T21:13:14-05:00
+categories: ["R"]
+tags: ["R Markdown", "plot", "regression"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+library(knitr)
+library(dplyr)
+library(stargazer)
+library(corrplot)
+library(ggplot2)
+su <- read.delim("survey.txt",sep = ",")
+names(su)[1] <- "Class.Standing"
+#Elinating floating white spaces from some factors, and fixing problematic variables
+su$Gender <- trimws(su$Gender,"r")
+su$Ethnicity.Race <- trimws(su$Ethnicity.Race,"r")
+su$access.to.decision.making. <- trimws(su$access.to.decision.making.,"r")
+su$su$dietary.restrictions. <- trimws(su$su$dietary.restrictions.,"r")
+su$study.midnight. <- trimws(su$study.midnight.,"r")
+
+#Correcting varibale classes. And renaming when necessary
+su$safe.campus <- as.numeric(as.character(su$safe.campus))
+su$food..Quality. <- as.numeric(as.character(su$food..Quality.))
+su$Rate.WiFi.at.QC.overall. <- as.character(su$Rate.WiFi.at.QC.overall.)
+su$Rate.WiFi.at.QC.overall.[su$Rate.WiFi.at.QC.overall.== "1-Poor"] <- "1"
+su$Rate.WiFi.at.QC.overall.[su$Rate.WiFi.at.QC.overall.== "2-Fair"] <- "2"
+su$Rate.WiFi.at.QC.overall.[su$Rate.WiFi.at.QC.overall.== "3-Good"] <- "3"
+su$Rate.WiFi.at.QC.overall.[su$Rate.WiFi.at.QC.overall.== "4-Excellent"] <- "4"
+su$Rate.WiFi.at.QC.overall. <- as.numeric(su$Rate.WiFi.at.QC.overall.)
+
+#Converting yes nos into binaries
+su$Night.Classes. <- as.character(su$Night.Classes.)
+su$Night.Classes.[su$Night.Classes.== "Yes"] <- "1"
+su$Night.Classes.[su$Night.Classes.== "No"] <- "0"
+su$Night.Classes. <- as.numeric(su$Night.Classes.)
+su$choose.vendors. <- as.character(su$choose.vendors.)
+su$choose.vendors.[su$choose.vendors.== "Yes"] <- "1"
+su$choose.vendors.[su$choose.vendors.== "No"] <- "0"
+su$choose.vendors. <- as.numeric(su$choose.vendors.)
+su$bike.sharing.rent <- as.character(su$bike.sharing.rent)
+su$bike.sharing.rent[su$bike.sharing.rent== "Yes"] <- "1"
+su$bike.sharing.rent[su$bike.sharing.rent== "No"] <- "0"
+su$bike.sharing.rent <- as.numeric(su$bike.sharing.rent)
+su$study.midnight. <- as.character(su$study.midnight.)
+su$study.midnight.[su$study.midnight.== "Yes"] <- "1"
+su$study.midnight.[su$study.midnight.== "No"] <- "0"
+su$study.midnight. <- as.numeric(su$study.midnight.)
+su$access.to.decision.making. <- as.character(su$access.to.decision.making.)
+su$access.to.decision.making.[su$access.to.decision.making.== "Yes"] <- "1"
+su$access.to.decision.making.[su$access.to.decision.making.== "No"] <- "0"
+su$access.to.decision.making. <- as.numeric(su$access.to.decision.making.)
+#binary varibale if else for dietary restrictions. Here assumed missing values is no restriction
+su$dietary.restrictions. <- as.character(su$dietary.restrictions.)
+su$diet <- ifelse(su$dietary.restrictions. == "No Restrictions" | su$dietary.restrictions. == "", 0, 1) 
+#Gender2 is binary for male female excluding nonconforming
+su$Gender2[su$Gender== "Male"] <- "1"
+su$Gender2[su$Gender== "Female"] <- "0"
+su$Gender2 <- as.numeric(su$Gender2)
+su$Current.Status2[su$Current.Status== "Full-Time"] <- "1"
+su$Current.Status2[su$Current.Status== "Part-Time"] <- "0"
+su$Current.Status2 <- as.numeric(as.character(su$Current.Status2))
+```
+
+## Introduction 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This report is a preliminary analysis of the Queens College survey data. The report is divided into the following sections I. Overview of data and concerns II. Prelimnary summary statistics III. Possible Future explorations. 
+
+## I. Data Overview
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; As with most surveys, the data is fairly messy in particular there are lots of missing values across the varibales and there are various ways that can be dealt with. I disscus some of the problematic variables below and show some tables. 
+
+### A. Correlation Plot
+
+This plot shows which variables correlate strongly or not at all with each other. The deeper the blue, the stronger the positive correlation. Deeper red indicates negative correlation. 
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+su2 <- select(su,4,7,9:12,14:18,22:24)
+#Safe campus weakly correlated with male gender
+M2 <- as.matrix(su2)
+a <- cor(M2,M2,method = "pearson", use = "complete.obs")
+corrplot(a,method="square")
+```
+
+### B. Major
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Majors could also be combined into categories looks like some are misspelled eg urban affaris/ urban studies. There also seem to be lots of double majors. Tables 1 and 2 show the distribution of majors with and without nas
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+a <- arrange(filter(as.data.frame(round(prop.table(table(su$Majors))*100,2)), Freq >= 1),-Freq)
+b <- arrange(filter(as.data.frame(table(su$Majors))),-Freq)[1:18,2]
+ab <- cbind(a,b)
+names(ab) <- c("Major","Frequency","Number")
+kable(ab,caption="Distribution of Majors >1%")
+#Removing na
+a2 <- arrange(filter(as.data.frame(round(prop.table(table(filter(su, Majors != "N/A")$Majors))*100,2)), Freq >= 1),-Freq)
+b2 <- filter(su, Majors != "N/A")
+b2 <- arrange(filter(as.data.frame(table(b2$Majors))),-Freq)[1:18,2]
+ab2 <- cbind(a2,b2)
+names(ab2) <- c("Major","Frequency","Number")
+kable(ab2,caption="Distribution of Majors >1% NAs excluded")
+
+```
+
+
+### C. Ethnicity Race
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pretty messy as people have different ways to identify themsleves. For example the data includes 1 child of god, 1 Filipino, Croatian, 3 humans,3 Brown, and 1048 nas.Also lots of spelling mistkaes eg Afro-Caribbean v Afro-Carribean. Table 1 shows race/ethnicy with more than 1% reporting. Table 2 shows with eliminating nas. Maybe best to classify into White non-hispanic, Black, Hispanic white/non-white/black, Asian, Mixed Race, other but this may be hard to put all together.
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+
+a <- arrange(filter(as.data.frame(round(prop.table(table(su$Ethnicity.Race))*100,2)), Freq >= 1),-Freq)
+b <- arrange(filter(as.data.frame(table(su$Ethnicity.Race))),-Freq)[1:9,2]
+names(ab) <- c("Ethnicity/Race","Frequency","Number")
+ab <- cbind(a,b)
+kable(ab,caption="Distribution of Ethncity/Race >1%")
+
+a2 <- arrange(filter(as.data.frame(round(prop.table(table(filter(su, Ethnicity.Race != "N/A")$Ethnicity.Race))*100,2)), Freq >= 1),-Freq)
+b2 <- filter(su, Ethnicity.Race != "N/A")
+b2 <- arrange(filter(as.data.frame(table(b2$Ethnicity.Race))),-Freq)[1:11,2]
+ab2 <- cbind(a2,b2)
+names(ab2) <- c("Ethnicity/Race","Frequency","Number")
+kable(ab2,caption="Distribution of Ethncity/Race >1% NAs excluded")
+
+```
+
+
+
+### D. Where is Wi Fi Poor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;very messy not many unique repeating values although lots of stuff like "Library (Part)", "Library (Certain Areas)"
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+a <- arrange(filter(as.data.frame(round(prop.table(table(su$Where.WiFi.poor.))*100,2)), Freq >= 1),-Freq)
+b <- arrange(filter(as.data.frame(table(su$Where.WiFi.poor.))),-Freq)[1:9,2]
+ab <- cbind(a,b)
+names(ab) <- c("Wifi","Frequency","Number")
+kable(ab,caption="Distribution of Where is wifi poor >1%")
+#Removing na
+a2 <- arrange(filter(as.data.frame(round(prop.table(table(filter(su, Where.WiFi.poor. != "N/A")$Where.WiFi.poor.))*100,2)), Freq >= 1),-Freq)
+b2 <- filter(su, Where.WiFi.poor. != "N/A")
+b2 <- arrange(filter(as.data.frame(table(b2$Where.WiFi.poor.))),-Freq)[1:9,2]
+ab2 <- cbind(a2,b2)
+names(ab2) <- c("Wifi","Frequency","Number")
+kable(ab2,caption="Distribution Where is wifi poor >1% no nas NAs excluded")
+```
+
+### E. Dietary Restrictions
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Again issues as above from an area of answers some odd/funny or combinations eg 11 Halal, Kosher, 7 No Restrictions, Halal, 1 Picky Eater, 1 Roti Shops. Table does not remove nas or make possible combinations. 
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+a <- arrange(filter(as.data.frame(round(prop.table(table(su$dietary.restrictions.))*100,2)), Freq >= 1),-Freq)
+b <- arrange(filter(as.data.frame(table(su$dietary.restrictions.))),-Freq)[1:7,2]
+ab <- cbind(a,b)
+kable(ab,caption="Distribution of Accountability Grades 2007-2013")
+```
+
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Quantative varibles such as the food quality and rating wifi seem fine and don't have as many nas and are easy to interepert. Can give a good big picutre few. Also, 8 likely duplicates removed. 27% don't report a gender, .2% nonconforming or .39% if excluding nas
+
+## II. Summary Stats
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Tables below present summary statistics of the quantative variables for all students and various subgroups. Note that diet is 1 if a person has any sort of dietary restrictions and 0 if they don't, and gender is coded 1 for male 0 for female with any gender nonconforming excluded.Current status2 1 if full time 0 for part time.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asians and Hispanics study at midnight more at 73% while whites lowest at 57%. Somewhat surprised not big differences in food variables by dietary restrictions although Vegans do rate a .3-.5 lower than pop average for food health, quality and variety. Slight differnces in male v female rating of campus safety by almost .2 but not huge
+
+### A. Summary Statistics
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+stargazer(su,type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables")
+#Splitting by male and female. Doesn't look like there are any glaring differneces
+stargazer(filter(su, Gender == "Male"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Males")
+stargazer(filter(su, Gender == "Female"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Females")
+stargazer(filter(su, Current.Status == "Full-Time"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Full Time Students")
+stargazer(filter(su, Current.Status == "Part-Time"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Part Time Students")
+stargazer(filter(su, Ethnicity.Race == "Asian"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Asians")
+stargazer(filter(su, Ethnicity.Race == "African American" | Ethnicity.Race == "Black"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables African American/Black")
+stargazer(filter(su, Ethnicity.Race == "White" | Ethnicity.Race == "Caucasian"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables White/Caucasian")
+stargazer(filter(su, Ethnicity.Race == "Hispanic" | Ethnicity.Race == "Latino" | Ethnicity.Race == "Latina"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Hispanic/Latino/Latina")
+stargazer(filter(su, dietary.restrictions. == "Halal"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Halal Dietary")
+stargazer(filter(su, dietary.restrictions. == "Kosher"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Kosher Dietary")
+stargazer(filter(su, dietary.restrictions. == "Vegetarian"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Vegetarian Dietary")
+stargazer(filter(su, dietary.restrictions. == "Vegan"),type = "latex",header=FALSE,title= "Summary Stats of Descriptive variables Vegan Dietary")
+```
+
+
+
+### C. Graphs
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here's some interesting graphs compiled from the data.
+
+``` {r, echo=FALSE,warning=FALSE,results='asis', fig.align="center"} 
+a <- ggplot(su, aes(as.factor(Gender),safe.campus))
+a + geom_boxplot() + theme_minimal()
+
+ggplot(su, aes(Class.Standing))+ geom_bar() + theme_minimal()
+```
+
+
+
+##III. Further Explorations
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Can link up to another data source. In particular looking at how representaive the survey data is relative to the the population would be interesting. Also R has a lot of nice graphics that I haven't used, but I can't figure out anything that interesting to represent
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Questions: What do the choose vendor and bike sharing rent variables mean? What else can be explored? What sort of visulizations would you want/would be helpful
